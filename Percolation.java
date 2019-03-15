@@ -2,7 +2,9 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class Percolation {
     private int openSites = 0;
-    private WeightedQuickUnionUF connections;
+    private WeightedQuickUnionUF percolation_connections;
+    private WeightedQuickUnionUF full_connections;
+
     private boolean[][] grid;
     private int topVirtualIndex;
     private int bottomVirtualIndex;
@@ -26,7 +28,8 @@ public class Percolation {
             throw new java.lang.IllegalArgumentException();
         }
 
-        connections = new WeightedQuickUnionUF(n*n + 2);
+        percolation_connections = new WeightedQuickUnionUF(n*n + 2);
+	full_connections = new WeightedQuickUnionUF(n*n + 2);
         grid = new boolean[n][n];
         this.n = n;
 
@@ -43,12 +46,12 @@ public class Percolation {
             topIndex = toLinearIndex(0, i);
             bottomIndex = toLinearIndex(n-1, i);
 
-
 	    System.out.println("topVirtualIndex " + topVirtualIndex + " bottomVirtualIndex "+ bottomVirtualIndex);
 	    System.out.println("topIndex " + topIndex + " bottomIndex "+ bottomIndex);
 	    
-            connections.union(topIndex, topVirtualIndex);
-            connections.union(bottomIndex, bottomVirtualIndex);
+            percolation_connections.union(topIndex, topVirtualIndex);
+            percolation_connections.union(bottomIndex, bottomVirtualIndex);
+	    full_connections.union(topIndex, topVirtualIndex);
         }
     }
 
@@ -67,22 +70,26 @@ public class Percolation {
 
         // connect to left left neighbor
         if (col != 0 && isOpen(row, col - 1)) {
-            connections.union(index, toLinearIndex(row, col - 1));
+            full_connections.union(index, toLinearIndex(row, col - 1));
+	    percolation_connections.union(index, toLinearIndex(row, col - 1));
         }
 
         // connect to right neighbor
         if (col != n-1 && isOpen(row, col + 1)) {
-            connections.union(index, toLinearIndex(row, col + 1));
+            full_connections.union(index, toLinearIndex(row, col + 1));
+	    percolation_connections.union(index, toLinearIndex(row, col + 1));
         }
 
         // connect to top neighbor
         if (row != 0 && isOpen(row - 1, col)) {
-            connections.union(index, toLinearIndex(row - 1, col));
+            full_connections.union(index, toLinearIndex(row - 1, col));
+	    percolation_connections.union(index, toLinearIndex(row - 1, col));
         }
 
         // connect to bottom neighbor
         if (row != n-1 && isOpen(row + 1, col)) {
-            connections.union(index, toLinearIndex(row + 1, col));
+            full_connections.union(index, toLinearIndex(row + 1, col));
+	    percolation_connections.union(index, toLinearIndex(row + 1, col));
         }
 
     }
@@ -104,7 +111,7 @@ public class Percolation {
 
         int index = toLinearIndex(row, col);
 
-        return isOpen(row,col) && connections.connected(index, topVirtualIndex);
+        return isOpen(row,col) && full_connections.connected(index, topVirtualIndex);
     }
 
     // number of open sites
@@ -114,7 +121,7 @@ public class Percolation {
 
     // does the system percolate?
     public boolean percolates() {
-        return connections.connected(topVirtualIndex, bottomVirtualIndex);
+        return percolation_connections.connected(topVirtualIndex, bottomVirtualIndex);
 
     }
 
